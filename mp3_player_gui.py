@@ -1,189 +1,182 @@
-from codecs import latin_1_decode
-from email.policy import strict
-from importlib.resources import path
-from operator import index
-from  tkinter import *
-from tkinter.filedialog import askdirectory
-from tokenize import String
-from turtle import bgcolor, width
-import pygame
 import os
 import pathlib
+import pygame
+from tkinter import *
+from tkinter.filedialog import askdirectory
 
 class MusicPlayer(Frame):
     def __init__(self, master):
         super(MusicPlayer, self).__init__(master)
 
-        # propting user to choose music directory
+        # Prompt user to choose music directory
         self.directory = askdirectory()
 
-        # channging working directory into music directory where user input
+        # Change working directory to the chosen music directory
         os.chdir(self.directory)
 
-        # acceptable audio extentions
+        # List valid audio extensions
         valid_extentions = [".mpc",  ".3gp",  ".aa",  ".aac",  ".aax",  ".act",  ".aiff",  ".alac",  ".amr", ".ape",  ".au", ".awb", ".dss",
         ".dvf", ".flac",  ".gsm", ".iklax", ".ivs", ".m4a", ".m4b", ".m4p", ".mmf", ".mp3", ".msv", ".nmf", ".ogg", ".oga",
         ".mogg", ".opus", ".ra", ".rm", ".raw", ".rf64", ".sln", ".tta", ".voc", ".vox", ".wav", ".wma", ".wv", ".webm",
         ".8svx", ".cda"]
 
-        # creating a variable where musics from music directory will be assigned to
+        # Assign music files from the chosen directory to self.song_list
         self.song_list = os.listdir()
 
-        # creating playlist of songs
+        # Create a playlist of songs
         self.playlist = Listbox(self, font="Helvetica, 12 bold", bg="yellow", selectmode=SINGLE)
 
-        # inserting each song from song_list directory into playlist one at a time
+        # Insert each song from song_list directory into the playlist
         for self.song in self.song_list:
  
-        # accepting only files with valid extentions
+            # Accept only files with valid extensions
             if pathlib.Path(self.song).suffix in valid_extentions:
  
-                # position of 1st song in playlist Listbox
+                # Position of the 1st song in playlist Listbox
                 self.pos = 0
                 self.playlist.insert(self.pos, self.song)
 
-                # updating each new song postion as next position
+                # Update each new song position as next position
                 self.pos += 1
 
-        # audio file names in playlist
+        # Audio file names in the playlist
         self.files_playlist = self.playlist.get(first=0, last="end")
 
-        # len of playlist
+        # Length of the playlist
         self.len_playlist = IntVar()
         self.len_playlist.set(len(self.files_playlist))
 
-        # current song index in playlist
+        # Current song index in the playlist
         self.index_song = IntVar() 
 
         self.grid()
 
-        # pause-unpause button label change
+        # Pause and Unpause button label change
         self.pause = StringVar()
         self.pause.set("PAUSE")
 
-        # controlling pause-unpause change
+        # Control pause and unpause change
         self.un_pause_control = IntVar()
         self.un_pause_control.set(0)
 
-        # initilazing pygame and pygame mixer
+        # Initialize pygame and pygame mixer
         pygame.init()   
         pygame.mixer.init()
 
         self.display_currentsong()
 
-        # function to create button
+        # Function to create buttons
         self.create_buttons()
 
     def create_buttons(self):
-        # creating button widgets
+        # Create button widgets
 
-        # play button widget
+        # Play button widget
         self.button_play = Button(self, width=5, height=3, font="Helvetica  12 bold", text="PLAY",
                             command=self.play, bg="red", fg="white", bd="10", relief="groove").grid(row=1, column=1, ipadx=70)
 
-        # stop button
+        # Stop button
         self.button_exit = Button(self, width=5, height=3, font="Helvetica  12 bold", text="STOP",
                             command=self.ExitMusicPlayer, bg="purple", fg="white", bd="9", relief="groove").grid(row=2, column=1)
 
-        # pause-unpause button
+                # Pause and Unpause button
         self.button_pause_unpause = Button(self, width=5, height=3, font="Helvetica  12 bold", textvariable=self.pause,
                             command=self.pause_unpause, bg="purple", fg="white", bd="9", relief="groove").grid(row=0, column=1)
 
-        # next song button
+        # Next song button
         self.button_next = Button(self, width=5, height=3, font="Helvetica  12 bold", text="NEXT",
                             command=self.next, bg="green", fg="white", bd="9", relief="groove").grid(row=1, column=2)
 
-        # previous song button
+        # Previous song button
         self.button_previous = Button(self, width=5, height=3, font="Helvetica  12 bold", text="PREVIOUS",
                             command=self.previous, bg="green", fg="white", bd="9", relief="groove").grid(row=1, column=0)
         
-    # button functions
+    # Button functions
         
-    # play song function
+    # Play song function
     def play(self):
-        # setting current playing index of song
+        # Set current playing index of song
         self.index_song.set(self.files_playlist.index(self.playlist.get(ACTIVE)))
 
-        # controllling steamed auido and loading a muisc file for playback
-        # ACTIVE refers active state of the file that is selected when cursor move on
+        # Load a music file for playback
         pygame.mixer.music.load(self.playlist.get(ACTIVE))
 
-        # whichever song from playlist chosen, set it active state
+        # Set the chosen song to active state
         self.var.set(self.playlist.get(ACTIVE))
 
-        # plays chosen song
+        # Play the chosen song
         pygame.mixer.music.play()
 
-    # stopping music player function
+    # Stop music player function
     def ExitMusicPlayer(self):
         pygame.mixer.music.stop()
 
-    # pausing-unpasing music function
+    # Pause and Unpause music function
     def pause_unpause(self):
-        # pausing
+        # Pause
         if self.un_pause_control.get() == 0:
             self.un_pause_control.set((self.un_pause_control.get()+1)%2)
             pygame.mixer.music.pause()
             self.pause.set("UNPAUSE")
 
         else:
-            # unpausing
+            # Unpause
             self.un_pause_control.set((self.un_pause_control.get()+1)%2)
             pygame.mixer.music.unpause()
             self.pause.set("PAUSE")
 
-    # next song function
+    # Next song function
     def next(self):
-        # setting next song index
+        # Set next song index
         self.index_song.set((self.index_song.get()+1)%self.len_playlist.get())
         
-        # selecting related song to play
+        # Select related song to play
         pygame.mixer.music.load(self.files_playlist[self.index_song.get()])
 
-        # setting displayed song name as next song
+        # Set displayed song name as next song
         self.var.set(self.files_playlist[self.index_song.get()])
 
-        # plays chosen song
+        # Play chosen song
         pygame.mixer.music.play()
 
-    # previous song function
+    # Previous song function
     def previous(self):
-        # setting next song index
+        # Set previous song index
         self.index_song.set((self.index_song.get()-1)%self.len_playlist.get())
         
-        # selecting related song to play
+        # Select related song to play
         pygame.mixer.music.load(self.files_playlist[self.index_song.get()])
 
-        # # setting displayed song name as previous song
+        # Set displayed song name as previous song
         self.var.set(self.files_playlist[self.index_song.get()])
 
-        # plays chosen song
+        # Play chosen song
         pygame.mixer.music.play()
 
-    # displaying current running song function
+    # Display current running song function
     def display_currentsong(self):
-        # display current running song
+        # Display current running song
         self.var = StringVar()
         songtitle = Label(self, font="Helvetica 12 bold", textvariable=self.var, bg="light blue", fg="black", bd="9", relief="groove", anchor=CENTER, width=30)
         songtitle.grid(row=3, column=1) 
         self.playlist.grid(row=4, column=1)
 
 
-# top-up windows
+# Top-up window
 root = Tk()
 
-# unresizable windows
+# Unresizable window
 root.resizable(height=False, width=False)
 
-# title of app
-root.title("music player")
+# App title
+root.title("Music Player")
 
-# size of app main windows
-root.geometry("426x450")
+# Main window size
+root.geometry("490x450")
 
 # instanting app
 app = MusicPlayer(root)
 
 mainloop()
 
-                
+
